@@ -1,3 +1,16 @@
+// ✅ التحقق من تحميل الملف
+console.log('📊 gameData.js: بدأ التحميل...');
+
+// Game Data - Stages Configuration
+const GAME_START_DATE = new Date('2024-12-01T00:00:00');
+const GAME_END_DATE = new Date('2025-01-22T23:59:59');
+
+// ... باقي الكود كما هو ...
+
+// في نهاية الملف:
+console.log('✅ gameData.js: تم التحميل بنجاح!');
+console.log(`📋 عدد المراحل: ${stages.length}`);
+console.log(`🔧 عدد مكونات الروبوت: ${robotLabComponents.parts.length}`);
 // Game Data - Stages Configuration
 const GAME_START_DATE = new Date('2024-12-01T00:00:00');
 const GAME_END_DATE = new Date('2025-01-22T23:59:59');
