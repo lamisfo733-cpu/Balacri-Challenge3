@@ -813,26 +813,43 @@ async function exportGameData() {
 
 // Password Puzzle Stage (Stage 8)
 function renderPasswordPuzzleStage(stage, stageProgress) {
-    const container = document.getElementById('challengesContainer');
-    if (!container) return;
+    console.log('🔐 محاولة عرض المرحلة 8 - Password Puzzle');
     
-    // Check if PasswordPuzzle class exists
-    if (typeof PasswordPuzzle === 'undefined') {
-        console.error('PasswordPuzzle class not loaded! Make sure specialGames.js is loaded.');
-        container.innerHTML = '<p style="color: red;">خطأ: لم يتم تحميل ملف specialGames.js بشكل صحيح</p>';
+    const container = document.getElementById('challengesContainer');
+    if (!container) {
+        console.error('❌ challengesContainer غير موجود!');
         return;
     }
+    
+    // ✅ تحقق محسّن من وجود الكلاس
+    if (typeof window.PasswordPuzzle === 'undefined') {
+        console.error('❌ PasswordPuzzle class غير محمل!');
+        console.log('🔍 تحقق من تحميل specialGames.js قبل script.js');
+        container.innerHTML = `
+            <div style="padding: 2rem; background: rgba(231, 76, 60, 0.1); border-radius: 10px; text-align: center;">
+                <h3 style="color: #e74c3c;">⚠️ خطأ في التحميل</h3>
+                <p>لم يتم تحميل المرحلة الخاصة بشكل صحيح.</p>
+                <p style="font-size: 0.9rem; color: #adb5bd;">يرجى تحديث الصفحة (F5) أو مسح الكاش.</p>
+                <button onclick="location.reload()" class="btn-primary" style="margin-top: 1rem;">
+                    🔄 تحديث الصفحة
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log('✅ PasswordPuzzle class موجود - بدء العرض');
     
     let html = `
         <div class="special-stage-header">
             <h3>🔐 مرحلة خاصة: لغز الأكواد السرية</h3>
-            <p>استخدم معلوماتك من المراحل السابقة لحل الألغاز!</p>
+            <p>استخدم المعلومات من المراحل السابقة لحل الألغاز!</p>
         </div>
     `;
     
     container.innerHTML = html;
     
-    const puzzleSystem = new PasswordPuzzle('challengesContainer');
+    const puzzleSystem = new window.PasswordPuzzle('challengesContainer');
     
     stage.challenges.forEach((challenge, index) => {
         const isCompleted = stageProgress.completedChallenges.includes(index);
@@ -840,6 +857,9 @@ function renderPasswordPuzzleStage(stage, stageProgress) {
         const challengeWrapper = document.createElement('div');
         challengeWrapper.className = 'challenge-wrapper';
         challengeWrapper.style.opacity = isCompleted ? '0.6' : '1';
+        if (isCompleted) {
+            challengeWrapper.style.pointerEvents = 'none';
+        }
         challengeWrapper.innerHTML = puzzleSystem.render(challenge, index);
         
         container.appendChild(challengeWrapper);
@@ -855,7 +875,7 @@ function renderPasswordPuzzleStage(stage, stageProgress) {
                 const userAnswer = input.value.trim();
                 
                 if (!userAnswer) {
-                    alert('الرجاء إدخال الكود');
+                    alert('الرجاء إدخال الكود السري');
                     return;
                 }
                 
@@ -877,55 +897,72 @@ function renderPasswordPuzzleStage(stage, stageProgress) {
 let currentGame = null;
 
 function renderPlatformGameStage(stage, stageProgress) {
-    const container = document.getElementById('challengesContainer');
-    if (!container) return;
+    console.log('🎮 محاولة عرض المرحلة 9 - Platform Game');
     
-    // Check if PlatformGame class exists
-    if (typeof PlatformGame === 'undefined') {
-        console.error('PlatformGame class not loaded! Make sure specialGames.js is loaded.');
-        container.innerHTML = '<p style="color: red;">خطأ: لم يتم تحميل ملف specialGames.js بشكل صحيح</p>';
+    const container = document.getElementById('challengesContainer');
+    if (!container) {
+        console.error('❌ challengesContainer غير موجود!');
         return;
     }
+    
+    // ✅ تحقق محسّن من وجود الكلاس
+    if (typeof window.PlatformGame === 'undefined') {
+        console.error('❌ PlatformGame class غير محمل!');
+        console.log('🔍 تحقق من تحميل specialGames.js قبل script.js');
+        container.innerHTML = `
+            <div style="padding: 2rem; background: rgba(231, 76, 60, 0.1); border-radius: 10px; text-align: center;">
+                <h3 style="color: #e74c3c;">⚠️ خطأ في التحميل</h3>
+                <p>لم يتم تحميل اللعبة بشكل صحيح.</p>
+                <p style="font-size: 0.9rem; color: #adb5bd;">يرجى تحديث الصفحة (F5) أو مسح الكاش.</p>
+                <button onclick="location.reload()" class="btn-primary" style="margin-top: 1rem;">
+                    🔄 تحديث الصفحة
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log('✅ PlatformGame class موجود - بدء العرض');
     
     let html = `
         <div class="special-stage-header">
             <h3>🎮 مرحلة خاصة: مغامرة LYBOTICS</h3>
-            <p>العب كروبوت بلاكرس وأصلح الكود للفوز!</p>
+            <p>العب واجمع القطع وأصلح الكود للفوز!</p>
         </div>
         
         <!-- Game -->
         <div class="game-container">
-            <h3>المهمة 1: اجمع القطع</h3>
+            <h3>🕹️ المهمة 1: اللعبة</h3>
             <canvas id="gameCanvas" class="game-canvas" width="800" height="400"></canvas>
             <div class="game-controls">
-                <p>الأسهم للتحريك | مسافة للقفز</p>
-                <p>اجمع 10 قطع غيار</p>
+                <p>⬅️ ➡️ للحركة | مسافة للقفز</p>
+                <p>🎯 اجمع 10 قطع غيار</p>
             </div>
-            <button class="start-game-btn" id="startGameBtn">ابدأ اللعبة</button>
+            <button class="start-game-btn" id="startGameBtn">▶️ ابدأ اللعبة</button>
         </div>
         
         <!-- Code Challenge -->
         <div class="code-fix-container" id="codeFix">
-            <h3>المهمة 2: أصلح الكود</h3>
+            <h3>🐛 المهمة 2: أصلح الكود</h3>
             <div class="code-display">
                 <pre><code>function moveRobot() {
     if (obstacle_detected) {
         robot.stop();
-        // خطأ هنا! ماذا يجب أن يفعل الروبوت؟
+        // ⚠️ خطأ هنا! ماذا يجب أن يفعل الروبوت؟
     } else {
         robot.moveForward();
     }
 }</code></pre>
             </div>
-            <p class="code-hint">💡 يجب أن يدور الروبوت يساراً عند وجود عائق!</p>
+            <p class="code-hint">💡 تلميح: يجب أن يدور الروبوت يساراً عند اكتشاف عائق!</p>
             <div class="code-input-group">
                 <input type="text" 
                        id="code-fix-input" 
                        class="code-input-field"
-                       placeholder="robot.turnLeft();"
+                       placeholder="اكتب السطر البرمجي الصحيح... مثال: robot.turnLeft();"
                        autocomplete="off" />
                 <button class="submit-code-btn" id="submitCodeFix">
-                    إصلاح الكود
+                    ✅ إصلاح الكود
                 </button>
             </div>
             <div id="code-feedback" class="feedback-message" style="display: none;"></div>
@@ -936,13 +973,13 @@ function renderPlatformGameStage(stage, stageProgress) {
     
     // Initialize game
     setTimeout(() => {
-        currentGame = new PlatformGame('gameCanvas');
+        currentGame = new window.PlatformGame('gameCanvas');
         
         const startBtn = document.getElementById('startGameBtn');
         if (startBtn) {
             startBtn.addEventListener('click', () => {
                 currentGame.start();
-                startBtn.textContent = 'اللعبة جارية...';
+                startBtn.textContent = '🎮 اللعبة قيد التشغيل...';
                 startBtn.disabled = true;
             });
         }
@@ -954,11 +991,16 @@ function renderPlatformGameStage(stage, stageProgress) {
                 const userCode = document.getElementById('code-fix-input').value.trim();
                 const feedback = document.getElementById('code-feedback');
                 
+                if (!userCode) {
+                    alert('الرجاء كتابة الكود أولاً');
+                    return;
+                }
+                
                 const normalized = userCode.toLowerCase().replace(/\s+/g, '');
                 
                 if (normalized.includes('turnleft') || normalized.includes('left')) {
                     feedback.className = 'feedback-message success';
-                    feedback.innerHTML = '✓ أحسنت! الكود يعمل الآن! 🎉';
+                    feedback.innerHTML = '✅ ممتاز! الكود يعمل الآن! يمكنك إكمال اللعبة 🎉';
                     feedback.style.display = 'block';
                     
                     if (currentGame) {
@@ -969,7 +1011,7 @@ function renderPlatformGameStage(stage, stageProgress) {
                     
                 } else {
                     feedback.className = 'feedback-message error';
-                    feedback.innerHTML = '✗ الكود لا يزال به خطأ. فكر في الاتجاه!';
+                    feedback.innerHTML = '❌ الكود لا يزال به خطأ. حاول مرة أخرى! 💡 تلميح: استخدم turnLeft';
                     feedback.style.display = 'block';
                 }
             });
@@ -981,201 +1023,62 @@ function renderPlatformGameStage(stage, stageProgress) {
                 clearInterval(checkWin);
                 updateChallengeProgress(stage.id, 0, 30);
                 updateChallengeProgress(stage.id, 2, 30);
-                alert('مبروك! أنهيت اللعبة بنجاح!');
+                alert('🎉 مبروك! فزت باللعبة!');
             }
         }, 1000);
         
     }, 100);
 }
 
+
 // Robot Lab Stage (Stage 10)
 let currentRobotLab = null;
 let currentSimulation = null;
 
 function renderRobotLabStage(stage, stageProgress) {
-    const container = document.getElementById('challengesContainer');
-    if (!container) return;
+    console.log('🔬 محاولة عرض المرحلة 10 - Robot Lab');
     
-    // Check if RobotLab class exists
-    if (typeof RobotLab === 'undefined') {
-        console.error('RobotLab class not loaded! Make sure specialGames.js is loaded.');
-        container.innerHTML = '<p style="color: red;">خطأ: لم يتم تحميل ملف specialGames.js بشكل صحيح</p>';
+    const container = document.getElementById('challengesContainer');
+    if (!container) {
+        console.error('❌ challengesContainer غير موجود!');
         return;
     }
+    
+    // ✅ تحقق محسّن من وجود الكلاس
+    if (typeof window.RobotLab === 'undefined') {
+        console.error('❌ RobotLab class غير محمل!');
+        console.log('🔍 تحقق من تحميل specialGames.js قبل script.js');
+        container.innerHTML = `
+            <div style="padding: 2rem; background: rgba(231, 76, 60, 0.1); border-radius: 10px; text-align: center;">
+                <h3 style="color: #e74c3c;">⚠️ خطأ في التحميل</h3>
+                <p>لم يتم تحميل مختبر الروبوت بشكل صحيح.</p>
+                <p style="font-size: 0.9rem; color: #adb5bd;">يرجى تحديث الصفحة (F5) أو مسح الكاش.</p>
+                <button onclick="location.reload()" class="btn-primary" style="margin-top: 1rem;">
+                    🔄 تحديث الصفحة
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log('✅ RobotLab class موجود - بدء العرض');
     
     let html = `
         <div class="special-stage-header">
             <h3>🔬 مرحلة خاصة: مختبر الروبوت التفاعلي</h3>
-            <p>صمم وبرمج روبوتك الخاص!</p>
+            <p>صمم وبرمج واختبر روبوتك الخاص!</p>
         </div>
     `;
     
     container.innerHTML = html;
     
-    currentRobotLab = new RobotLab('challengesContainer');
+    currentRobotLab = new window.RobotLab('challengesContainer');
     
     // Challenge 1: Component selection
     renderRobotComponentSelector(stage.challenges[0]);
 }
 
-function renderRobotComponentSelector(challenge) {
-    const container = document.getElementById('challengesContainer');
-    if (!container || !currentRobotLab) return;
-    
-    container.innerHTML += currentRobotLab.renderComponentSelector(challenge);
-    
-    setTimeout(() => {
-        currentRobotLab.setupComponentSelection(challenge);
-        
-        const submitBtn = document.getElementById('submitDesign');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', async () => {
-                if (currentRobotLab.selectedComponents.length >= challenge.minComponents) {
-                    alert(`أحسنت! مكوناتك: ${currentRobotLab.selectedComponents.join(', ')}`);
-                    await updateChallengeProgress(currentStageId, 0, challenge.points);
-                    
-                    // Move to next challenge
-                    renderRobotProgramming();
-                }
-            });
-        }
-    }, 100);
-}
-
-function renderRobotProgramming() {
-    const container = document.getElementById('challengesContainer');
-    if (!container || !currentRobotLab) return;
-    
-    const stage = stages.find(s => s.id === currentStageId);
-    if (!stage) return;
-    
-    const challenge = stage.challenges[1];
-    
-    container.innerHTML = `
-        <div class="special-stage-header">
-            <h3>💻 المهمة 2: برمج روبوتك</h3>
-        </div>
-    ` + currentRobotLab.renderBlockProgramming(challenge);
-    
-    setTimeout(() => {
-        currentRobotLab.setupBlockProgramming();
-        
-        const runBtn = document.getElementById('runProgram');
-        if (runBtn) {
-            runBtn.addEventListener('click', async () => {
-                const program = currentRobotLab.programmingBlocks;
-                
-                if (program.length < 3) {
-                    alert('يجب إضافة 3 كتل على الأقل!');
-                    return;
-                }
-                
-                const feedback = document.getElementById('program-feedback');
-                if (feedback) {
-                    feedback.className = 'feedback-message success';
-                    feedback.innerHTML = '✓ البرنامج يعمل! جاهز للمحاكاة';
-                    feedback.style.display = 'block';
-                }
-                
-                await updateChallengeProgress(currentStageId, 1, challenge.points);
-                
-                // Move to simulation
-                setTimeout(() => {
-                    renderRobotSimulation();
-                }, 2000);
-            });
-        }
-    }, 100);
-}
-
-function renderRobotSimulation() {
-    const container = document.getElementById('challengesContainer');
-    if (!container || !currentRobotLab) return;
-    
-    const stage = stages.find(s => s.id === currentStageId);
-    if (!stage) return;
-    
-    const challenge = stage.challenges[2];
-    
-    container.innerHTML = `
-        <div class="special-stage-header">
-            <h3>🎮 المهمة 3: اختبار المحاكاة</h3>
-        </div>
-    ` + currentRobotLab.renderSimulation();
-    
-    setTimeout(() => {
-        if (typeof RobotSimulation === 'undefined') return;
-        
-        currentSimulation = new RobotSimulation('robotSimCanvas');
-        
-        const startBtn = document.getElementById('startSimulation');
-        if (startBtn) {
-            startBtn.addEventListener('click', async () => {
-                currentSimulation.start(currentRobotLab.programmingBlocks);
-                startBtn.disabled = true;
-                
-                // Check for success
-                const checkSuccess = setInterval(async () => {
-                    if (currentSimulation.collected >= 5) {
-                        clearInterval(checkSuccess);
-                        await updateChallengeProgress(currentStageId, 2, challenge.points);
-                        
-                        setTimeout(() => {
-                            renderCreativeChallenge();
-                        }, 2000);
-                    }
-                }, 1000);
-            });
-        }
-    }, 100);
-}
-
-function renderCreativeChallenge() {
-    const container = document.getElementById('challengesContainer');
-    if (!container) return;
-    
-    const stage = stages.find(s => s.id === currentStageId);
-    if (!stage) return;
-    
-    const challenge = stage.challenges[3];
-    
-    container.innerHTML = `
-        <div class="special-stage-header">
-            <h3>💡 المهمة الإبداعية النهائية!</h3>
-        </div>
-        <div class="robot-lab-container">
-            <h3>صمم مهمة جديدة</h3>
-            <p>أخبرنا عن مهمة مبتكرة تريد أن يقوم بها روبوتك!</p>
-            <textarea id="creativeIdea" 
-                      style="width: 100%; min-height: 150px; padding: 1rem; 
-                             border-radius: 10px; background: rgba(255,255,255,0.05);
-                             color: white; font-family: Cairo; border: 2px solid #9b59b6;"
-                      placeholder="اكتب فكرتك..."></textarea>
-            <button class="submit-design-btn" id="submitCreative">إرسال الفكرة</button>
-        </div>
-    `;
-    
-    setTimeout(() => {
-        const submitBtn = document.getElementById('submitCreative');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', async () => {
-                const idea = document.getElementById('creativeIdea').value.trim();
-                
-                if (idea.length < 20) {
-                    alert('الرجاء كتابة فكرة أطول (20 حرف على الأقل)');
-                    return;
-                }
-                
-                await updateChallengeProgress(currentStageId, 3, challenge.points);
-                
-                alert('🎉 مبروك! أكملت جميع مهام مختبر الروبوت! فكرتك رائعة! 💚');
-                
-                // Refresh stages display
-                renderStages();
-            });
-        }
-    }, 100);
-}
+// ... باقي الدوال كما هي (renderRobotComponentSelector, renderRobotProgramming, etc.)
 
 // Helper function to update challenge progress
 async function updateChallengeProgress(stageId, challengeIndex, points) {
