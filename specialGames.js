@@ -1,3 +1,20 @@
+// ✅ التحقق من تحميل الملف
+console.log('🎮 specialGames.js: بدأ التحميل...');
+
+// Special Interactive Games for Stages 8, 9, and 10
+// Must be loaded BEFORE script.js
+
+// ... باقي الكود كما هو ...
+
+// في نهاية الملف، أضف:
+
+console.log('✅ specialGames.js: تم التحميل بنجاح!');
+console.log('📦 الكلاسات المسجلة:', {
+    PasswordPuzzle: typeof PasswordPuzzle !== 'undefined',
+    PlatformGame: typeof PlatformGame !== 'undefined',
+    RobotLab: typeof RobotLab !== 'undefined',
+    RobotSimulation: typeof RobotSimulation !== 'undefined'
+});
 // Special Interactive Games for Stages 8, 9, and 10
 // Must be loaded after main script.js
 
