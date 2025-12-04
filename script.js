@@ -264,6 +264,57 @@ function renderChallenges(stage, stageProgress) {
     const container = document.getElementById('challengesContainer');
     container.innerHTML = '';
     
+    // ========== إضافة جديدة للمراحل الخاصة ==========
+    
+    // تحقق من نوع المرحلة الخاص
+    if (stage.specialType === 'password_puzzle') {
+        renderPasswordPuzzleStage(stage, stageProgress);
+        return;
+    }
+    
+    if (stage.specialType === 'platform_game') {
+        renderPlatformGameStage(stage, stageProgress);
+        return;
+    }
+    
+    if (stage.specialType === 'robot_lab') {
+        renderRobotLabStage(stage, stageProgress);
+        return;
+    }
+    
+    // ========== نهاية الإضافة ==========
+    
+    // الكود الأصلي للمراحل العادية يستمر هنا...
+    stage.challenges.forEach((challenge, index) => {
+        // ... الكود الموجود
+    });
+}
+
+function renderChallenges(stage, stageProgress) {
+    const container = document.getElementById('challengesContainer');
+    container.innerHTML = '';
+    
+    // ✨ أضف هذا الكود ✨
+    if (stage.specialType === 'password_puzzle') {
+        renderPasswordPuzzleStage(stage, stageProgress);
+        return;
+    }
+    if (stage.specialType === 'platform_game') {
+        renderPlatformGameStage(stage, stageProgress);
+        return;
+    }
+    if (stage.specialType === 'robot_lab') {
+        renderRobotLabStage(stage, stageProgress);
+        return;
+    }
+    // ✨ نهاية الإضافة ✨
+    
+    // الكود الأصلي يستمر...
+}
+function renderChallenges(stage, stageProgress) {
+    const container = document.getElementById('challengesContainer');
+    container.innerHTML = '';
+    
     stage.challenges.forEach((challenge, index) => {
         const isCompleted = stageProgress.completedChallenges.includes(index);
         
@@ -698,5 +749,351 @@ async function exportGameData() {
         console.error('Error exporting data:', error);
         showLoading(false);
         alert('حدث خطأ أثناء تصدير البيانات');
+    }
+}
+// ========== المرحلة 8: Password Puzzle ==========
+function renderPasswordPuzzleStage(stage, stageProgress) {
+    const container = document.getElementById('challengesContainer');
+    
+    let html = `
+        <div class="special-stage-header">
+            <h3>🔐 مرحلة خاصة: لغز الأكواد السرية</h3>
+            <p>استخدم معلوماتك من المراحل السابقة لحل الألغاز!</p>
+        </div>
+    `;
+    
+    const puzzleSystem = new PasswordPuzzle('challengesContainer');
+    
+    stage.challenges.forEach((challenge, index) => {
+        const isCompleted = stageProgress.completedChallenges.includes(index);
+        
+        html += `
+            <div class="challenge-wrapper" data-challenge="${index}">
+                ${puzzleSystem.render(challenge, index)}
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // إضافة event listeners
+    document.querySelectorAll('.submit-password-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const challengeIndex = parseInt(e.target.dataset.challenge);
+            const challenge = stage.challenges[challengeIndex];
+            const input = document.getElementById(`password-${challengeIndex}`);
+            const userAnswer = input.value.trim();
+            
+            if (!userAnswer) {
+                alert('الرجاء إدخال الكود السري');
+                return;
+            }
+            
+            const isCorrect = puzzleSystem.checkPassword(
+                userAnswer, 
+                challenge.correctAnswer, 
+                challengeIndex
+            );
+            
+            if (isCorrect) {
+                await updateChallengeProgress(stage.id, challengeIndex, challenge.points);
+            }
+        });
+    });
+}
+// ========== المرحلة 9: Platform Game ==========
+let currentGame = null;
+let currentCodeFix = null;
+
+function renderPlatformGameStage(stage, stageProgress) {
+    const container = document.getElementById('challengesContainer');
+    
+    let html = `
+        <div class="special-stage-header">
+            <h3>🎮 مرحلة خاصة: مغامرة LYBOTICS</h3>
+            <p>ساعد روبوت بلاكرس في جمع القطع وأصلح الكود!</p>
+        </div>
+        
+        <!-- اللعبة -->
+        <div class="game-container">
+            <h3>🕹️ التحدي الأول: لعبة المنصات</h3>
+            <canvas id="gameCanvas" class="game-canvas" width="800" height="400"></canvas>
+            <div class="game-controls">
+                <p>استخدم الأسهم ← → للحركة | مسافة ⬆️ للقفز</p>
+                <p>اجمع 10 قطع غيار ⚙️</p>
+            </div>
+            <button class="start-game-btn" id="startGameBtn">بدء اللعبة</button>
+        </div>
+        
+        <!-- تحدي الكود -->
+        <div class="code-fix-container" id="codeFix">
+            <h3>🐛 التحدي الثاني: أصلح الكود</h3>
+            <div class="code-display">
+                <pre><code>function moveRobot() {
+    if (obstacle_detected) {
+        robot.stop();
+        // خطأ هنا! ماذا يجب أن يفعل الروبوت؟
+    } else {
+        robot.moveForward();
+    }
+}</code></pre>
+            </div>
+            <p class="code-hint">💡 يجب أن يدور الروبوت يساراً عند وجود عائق!</p>
+            <div class="code-input-group">
+                <input type="text" 
+                       id="code-fix-input" 
+                       class="code-input-field"
+                       placeholder="robot.turnLeft();"
+                       autocomplete="off" />
+                <button class="submit-code-btn" id="submitCodeFix">
+                    إصلاح الكود
+                </button>
+            </div>
+            <div id="code-feedback" class="feedback-message" style="display: none;"></div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // تهيئة اللعبة
+    setTimeout(() => {
+        currentGame = new PlatformGame('gameCanvas');
+        
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+            currentGame.start();
+            document.getElementById('startGameBtn').textContent = 'اللعبة قيد التشغيل...';
+            document.getElementById('startGameBtn').disabled = true;
+        });
+        
+        // تحدي الكود
+        document.getElementById('submitCodeFix').addEventListener('click', async () => {
+            const userCode = document.getElementById('code-fix-input').value.trim();
+            const correctCode = 'robot.turnLeft();';
+            const feedback = document.getElementById('code-feedback');
+            
+            const normalized1 = userCode.toLowerCase().replace(/\s+/g, '');
+            const normalized2 = correctCode.toLowerCase().replace(/\s+/g, '');
+            
+            if (normalized1.includes('turnleft') || normalized1.includes('left')) {
+                feedback.className = 'feedback-message success';
+                feedback.innerHTML = '✓ أحسنت! الكود يعمل الآن! 🎉';
+                feedback.style.display = 'block';
+                
+                // فتح اللعبة
+                if (currentGame) {
+                    currentGame.setCodeFixed(true);
+                }
+                
+                // تحديث التقدم
+                await updateChallengeProgress(stage.id, 1, 40);
+                
+            } else {
+                feedback.className = 'feedback-message error';
+                feedback.innerHTML = '✗ الكود لا يزال به خطأ. حاول مرة أخرى!';
+                feedback.style.display = 'block';
+            }
+        });
+        
+        // مراقبة الفوز باللعبة
+        const checkWin = setInterval(() => {
+            if (currentGame && currentGame.gameWon) {
+                clearInterval(checkWin);
+                updateChallengeProgress(stage.id, 0, 30);
+                updateChallengeProgress(stage.id, 2, 30);
+                alert('🎉 رائع! أكملت التحدي بنجاح!');
+            }
+        }, 1000);
+        
+    }, 100);
+}
+// ========== المرحلة 10: Robot Lab ==========
+let currentRobotLab = null;
+let currentSimulation = null;
+
+function renderRobotLabStage(stage, stageProgress) {
+    const container = document.getElementById('challengesContainer');
+    
+    let html = `
+        <div class="special-stage-header">
+            <h3>🔬 المرحلة النهائية: مختبر الروبوت التفاعلي</h3>
+            <p>صمم وبرمج روبوتك الخاص!</p>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    currentRobotLab = new RobotLab('challengesContainer');
+    
+    // التحدي 1: اختيار المكونات
+    renderRobotComponentSelector(stage.challenges[0]);
+}
+
+function renderRobotComponentSelector(challenge) {
+    const container = document.getElementById('challengesContainer');
+    const lab = currentRobotLab;
+    
+    container.innerHTML += lab.renderComponentSelector(challenge);
+    
+    setTimeout(() => {
+        lab.setupComponentSelection(challenge);
+        
+        document.getElementById('submitDesign').addEventListener('click', async () => {
+            if (lab.selectedComponents.length >= challenge.minComponents) {
+                alert(`✓ تصميم رائع! اخترت: ${lab.selectedComponents.join(', ')}`);
+                await updateChallengeProgress(currentStageId, 0, challenge.points);
+                
+                // الانتقال للتحدي التالي
+                renderRobotProgramming();
+            }
+        });
+    }, 100);
+}
+
+function renderRobotProgramming() {
+    const container = document.getElementById('challengesContainer');
+    const stage = stages.find(s => s.id === currentStageId);
+    const challenge = stage.challenges[1];
+    
+    container.innerHTML = `
+        <div class="special-stage-header">
+            <h3>🔬 المرحلة النهائية: مختبر الروبوت التفاعلي</h3>
+        </div>
+    ` + currentRobotLab.renderBlockProgramming(challenge);
+    
+    setTimeout(() => {
+        currentRobotLab.setupBlockProgramming();
+        
+        document.getElementById('runProgram').addEventListener('click', async () => {
+            const program = currentRobotLab.programmingBlocks;
+            
+            if (program.length < 3) {
+                alert('أضف على الأقل 3 كتل برمجية!');
+                return;
+            }
+            
+            const feedback = document.getElementById('program-feedback');
+            feedback.className = 'feedback-message success';
+            feedback.innerHTML = '✓ البرنامج يعمل! 🎉';
+            feedback.style.display = 'block';
+            
+            await updateChallengeProgress(currentStageId, 1, challenge.points);
+            
+            // الانتقال للمحاكاة
+            setTimeout(() => {
+                renderRobotSimulation();
+            }, 2000);
+        });
+    }, 100);
+}
+
+function renderRobotSimulation() {
+    const container = document.getElementById('challengesContainer');
+    const stage = stages.find(s => s.id === currentStageId);
+    const challenge = stage.challenges[2];
+    
+    container.innerHTML = `
+        <div class="special-stage-header">
+            <h3>🔬 المرحلة النهائية: مختبر الروبوت التفاعلي</h3>
+        </div>
+    ` + currentRobotLab.renderSimulation();
+    
+    setTimeout(() => {
+        currentSimulation = new RobotSimulation('robotSimCanvas');
+        
+        document.getElementById('startSimulation').addEventListener('click', async () => {
+            currentSimulation.start(currentRobotLab.programmingBlocks);
+            document.getElementById('startSimulation').disabled = true;
+            
+            // مراقبة النجاح
+            const checkSuccess = setInterval(async () => {
+                if (currentSimulation.collected >= 5) {
+                    clearInterval(checkSuccess);
+                    await updateChallengeProgress(currentStageId, 2, challenge.points);
+                    
+                    setTimeout(() => {
+                        renderCreativeChallenge();
+                    }, 2000);
+                }
+            }, 1000);
+        });
+    }, 100);
+}
+
+function renderCreativeChallenge() {
+    const container = document.getElementById('challengesContainer');
+    const stage = stages.find(s => s.id === currentStageId);
+    const challenge = stage.challenges[3];
+    
+    container.innerHTML = `
+        <div class="special-stage-header">
+            <h3>🔬 التحدي الإبداعي النهائي!</h3>
+        </div>
+        <div class="robot-lab-container">
+            <h3>🎨 صمم مهمتك الخاصة</h3>
+            <p>ماذا تريد أن يفعل روبوتك؟ كن مبدعاً!</p>
+            <textarea id="creativeIdea" 
+                      style="width: 100%; min-height: 150px; padding: 1rem; 
+                             border-radius: 10px; background: rgba(255,255,255,0.05);
+                             color: white; font-family: Cairo; border: 2px solid #9b59b6;"
+                      placeholder="اكتب فكرتك هنا..."></textarea>
+            <button class="submit-design-btn" id="submitCreative">إرسال الفكرة</button>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('submitCreative').addEventListener('click', async () => {
+            const idea = document.getElementById('creativeIdea').value.trim();
+            
+            if (idea.length < 20) {
+                alert('اكتب فكرة أطول (20 حرف على الأقل)');
+                return;
+            }
+            
+            await updateChallengeProgress(currentStageId, 3, challenge.points);
+            
+            alert('🎉 أحسنت! أكملت جميع تحديات مختبر الروبوت! أنت مبدع حقاً! 🤖✨');
+            
+            // تحديث عرض المراحل
+            renderStages();
+        });
+    }, 100);
+}
+// دالة مساعدة لتحديث التقدم
+async function updateChallengeProgress(stageId, challengeIndex, points) {
+    const stageProgress = currentPlayer.progress.find(p => p.stageId === stageId);
+    
+    if (!stageProgress.completedChallenges.includes(challengeIndex)) {
+        stageProgress.completedChallenges.push(challengeIndex);
+        stageProgress.score += points;
+    }
+    
+    // التحقق من اكتمال المرحلة
+    const stage = stages.find(s => s.id === stageId);
+    if (stageProgress.completedChallenges.length === stage.challenges.length) {
+        stageProgress.completed = true;
+    }
+    
+    // حفظ في Firestore
+    showLoading(true);
+    try {
+        await updateDoc(doc(db, 'players', currentPlayer.email), {
+            progress: currentPlayer.progress,
+            lastActive: new Date().toISOString()
+        });
+        
+        updatePlayerInfo();
+        
+        if (stageProgress.completed && 
+            stageProgress.completedChallenges.length === stage.challenges.length) {
+            setTimeout(() => {
+                showStageCompletionMessage(stage, stageProgress.score);
+            }, 1500);
+        }
+        
+        showLoading(false);
+    } catch (error) {
+        console.error('Error saving progress:', error);
+        showLoading(false);
+        alert('حدث خطأ أثناء حفظ التقدم');
     }
 }
